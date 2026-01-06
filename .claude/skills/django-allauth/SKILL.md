@@ -15,9 +15,6 @@ Use this skill when working with django-allauth for authentication, social login
 7. [Headless/API Mode](#headlessapi-mode)
 8. [Email Configuration](#email-configuration)
 9. [Security Best Practices](#security-best-practices)
-10. [Custom Providers](#custom-providers)
-11. [Helper Scripts](#helper-scripts)
-12. [Common Workflows](#common-workflows)
 
 ---
 
@@ -32,7 +29,7 @@ Invoke this skill when working with:
 - **Headless**: JWT tokens, session auth, SPA/mobile integration, CORS
 - **Email**: Verification workflows, custom templates, code vs link verification
 - **Security**: Rate limiting, enumeration prevention, reauthentication, PKCE
-- **Custom**: Building OAuth2/OIDC providers, extending auth flows
+- **Custom Providers**: Building OAuth2/OIDC providers (see `reference/custom-provider.md`)
 
 **Key Terms**: django-allauth, OAuth2, OIDC, social login, AccountAdapter, SocialAccountAdapter, MFA, TOTP, WebAuthn, JWT, headless, rate limiting
 
@@ -146,7 +143,7 @@ def create_profile(sender, request, user, **kwargs):
 
 **Forms:** Override via `ACCOUNT_FORMS = {'signup': 'myapp.forms.CustomSignupForm'}`
 
-**Reference**: `reference/customization.md` for 60+ adapter methods. Use `scripts/generate_adapter.py`.
+**Reference**: `reference/adapter-methods.md` for 60+ adapter methods, `reference/signals-reference.md` for signals.
 
 ---
 
@@ -238,87 +235,12 @@ SESSION_COOKIE_HTTPONLY = True
 
 **Critical:** Never set `ACCOUNT_EMAIL_UNKNOWN_ACCOUNTS = True`. `LOGOUT_ON_PASSWORD_CHANGE` defaults False.
 
-**Reference**: `reference/security.md`, `reference/security-checklist.md`, `scripts/security_audit.py`.
+**Reference**: `reference/security.md` for comprehensive security guide.
 
 ---
 
-## Custom Providers
+## Helper Script
 
-**Basic Provider:**
-```python
-class CustomProvider(OAuth2Provider):
-    id = 'custom'
-    name = 'Custom Provider'
-    def extract_uid(self, data):
-        return str(data['id'])
-    def extract_common_fields(self, data):
-        return dict(email=data.get('email'), username=data.get('username'))
-```
-
-**OAuth2 Adapter:** Extend `OAuth2Adapter`, set `access_token_url`, `authorize_url`, `profile_url`, implement `complete_login()`
-
-**Reference**: `reference/custom-provider.md` for complete guide with URL configuration and testing.
-
----
-
-## Helper Scripts
-
-**check_allauth_setup.py** - Verifies installation and auto-fixes issues
-- Checks: Django/Python versions, INSTALLED_APPS, AUTHENTICATION_BACKENDS, SESSION_ENGINE, EMAIL_BACKEND, SITE_ID, migrations
+**check_allauth_setup.py** - Verifies installation and auto-fixes common issues
+- Checks: Django/Python versions, INSTALLED_APPS, SESSION_ENGINE, EMAIL_BACKEND, SITE_ID, migrations
 - Usage: `python scripts/check_allauth_setup.py`
-
-**add_social_provider.py** - Interactive provider setup wizard
-- Features: Provider selection, settings generation, callback URL format, admin instructions
-- Usage: `python scripts/add_social_provider.py`
-
-**generate_adapter.py** - Scaffolds custom adapters
-- Features: Adapter type selection, method override menu by category, boilerplate code generation
-- Usage: `python scripts/generate_adapter.py`
-
----
-
-## Common Workflows
-
-**1. Add Google OAuth:**
-- Add `'allauth.socialaccount.providers.google'` to INSTALLED_APPS
-- Create Social App in admin (Client ID, Secret)
-- Configure callback: `https://domain.com/accounts/google/login/callback/`
-
-**2. Customize Signup:**
-- Create custom `AccountAdapter` with `save_user()` override
-- Set `ACCOUNT_ADAPTER = 'myapp.adapters.CustomAccountAdapter'`
-- Add `@receiver(user_signed_up)` signal for post-signup tasks
-
-**3. Headless API with JWT:**
-- Install: `pip install djangorestframework-simplejwt django-cors-headers`
-- Add `'allauth.headless'` to INSTALLED_APPS
-- Set `HEADLESS_TOKEN_STRATEGY` to JWT
-- Configure CORS with `CORS_ALLOW_CREDENTIALS = True`
-
-**4. Enable MFA:**
-- Add `'allauth.mfa'` to INSTALLED_APPS
-- Set `MFA_SUPPORTED_TYPES = ["recovery_codes", "totp"]`
-- Run `migrate allauth.mfa`
-- Users configure at `/accounts/mfa/`
-
-**5. Custom Email Templates:**
-- Create `templates/account/email/`
-- Copy templates (subject.txt, message.txt)
-- Use `{{ user }}`, `{{ activate_url }}`, `{{ key }}`
-
----
-
-## Reference Files
-
-All detailed documentation in `reference/`:
-
-- `setup-guide.md` - Complete installation and troubleshooting
-- `social-providers.md` - Google, GitHub, Facebook, Microsoft, Apple setup
-- `customization.md` - 60+ adapter methods, signals, forms
-- `mfa-setup.md` - Multi-factor configuration and enforcement
-- `headless-api.md` - Complete API documentation (34 endpoints)
-- `email-templates.md` - All 40 templates with context variables
-- `security.md` - Comprehensive security guide and attack mitigations
-- `custom-provider.md` - OAuth2/OIDC provider development
-
-Scripts in `scripts/`: check_allauth_setup.py, add_social_provider.py, generate_adapter.py
