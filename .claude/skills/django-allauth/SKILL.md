@@ -235,7 +235,7 @@ SESSION_COOKIE_HTTPONLY = True
 
 **Critical:** Never set `ACCOUNT_EMAIL_UNKNOWN_ACCOUNTS = True`. `LOGOUT_ON_PASSWORD_CHANGE` defaults False.
 
-**Reference**: `reference/security.md` for comprehensive security guide.
+**Reference**: `reference/security.md` for comprehensive guide, `reference/security-blunder-check.md` for quick audit of common foot guns.
 
 ---
 
